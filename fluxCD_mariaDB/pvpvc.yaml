@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mariagalerapv
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/mariagalera
+
+
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: database
+  name: mariagalerapvc  
+spec:
+  storageClassName: standard
+  volumeName: mariagalerapvc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
