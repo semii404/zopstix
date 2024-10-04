@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: nexus
+  name: nexus3-72-pvc  
+spec:
+  storageClassName: nexusdata
+  volumeName: nexus3-72-pv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

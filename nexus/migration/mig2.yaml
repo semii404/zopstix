@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-backup
+  namespace: nexus
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: assignment-worker1
+  containers:
+  - name: create-backup
+    image: sonatype/nexus3:3.70.1
+    command:
+      - sh
+      - -c
+      - |
+        # Check if the migration directory exists, and remove it if it does
+        if [ -d /nexus370/migration ]; then
+          echo "Migration directory exists. Removing it..."
+          rm -rf /nexus370/migration
+        fi
+        
+        # Create a new migration directory
+        mkdir -p /nexus370/migration &&
+        pwd &&
+        cd /nexus370/backupdemo1 &&
+        
+        # Capture non-.bak files and directories to be removed
+        files_to_remove=$(find . -mindepth 1 ! -name '*.bak') &&
+        
+        # Remove the captured files and directories
+        if [ -n "$files_to_remove" ]; then
+          echo "Removing non-.bak files and directories: $files_to_remove" &&
+          rm -rf $files_to_remove
+        fi
+        
+        yes | java -Xmx1G -Xms1G -XX:+UseG1GC -XX:MaxDirectMemorySize=1G -jar ../nexus370.jar --migration_type=h2 --force=true &&
+        
+        # Copy necessary files and blobs to the migration directory
+        cp -r * /nexus370/migration/
+        # cp -rf /nexus370/blobs/ /nexus370/migration/
+        
+        # Cleanup after migration
+        rm -rf /nexus370/backupdemo1/*
+        
+        # Keep the container running (optional)
+        tail -f /dev/null
+    volumeMounts:
+      - mountPath: /nexus370
+        name: nexus3-70-1
+    securityContext:
+      runAsUser: 0
+  volumes:
+  - name: nexus3-70-1
+    persistentVolumeClaim:
+      claimName: nexus3-70-1-pvc

@@ -1,0 +1,34 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: nexus
+  name: nexus3-70-1
+  labels:
+    app: nexus3-70-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus3-70-1
+  template:
+    metadata:
+      labels:
+        app: nexus3-70-1
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: assignment-worker1
+      containers:
+        - image: sonatype/nexus3:3.70.1 
+          name: nexus3
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - mountPath: /nexus-data  
+              name: nexus3-70-1
+          securityContext:
+            runAsUser: 0  
+      volumes:
+        - name: nexus3-70-1
+          persistentVolumeClaim:
+            claimName: nexus3-70-1-pvc
